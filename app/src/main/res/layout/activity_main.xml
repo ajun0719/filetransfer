@@ -1,0 +1,460 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5F5"
+    android:padding="12dp"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- ========== 1. 服务控制 ========== -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:background="#FFFFFF">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btn_start"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:text="启动服务"
+                        android:backgroundTint="#4CAF50"
+                        android:textColor="#FFFFFF"
+                        android:textSize="15sp"
+                        android:layout_marginEnd="6dp"
+                        app:cornerRadius="22dp" />
+
+                    <Button
+                        android:id="@+id/btn_stop"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:text="停止服务"
+                        android:enabled="false"
+                        android:backgroundTint="#F44336"
+                        android:textColor="#FFFFFF"
+                        android:textSize="15sp"
+                        android:layout_marginStart="6dp"
+                        app:cornerRadius="22dp" />
+                </LinearLayout>
+
+                <!-- 状态 -->
+                <TextView
+                    android:id="@+id/tv_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⚪ 未启动"
+                    android:layout_marginTop="10dp"
+                    android:textSize="15sp"
+                    android:textColor="#555555" />
+
+                <!-- 地址 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="6dp">
+
+                    <TextView
+                        android:id="@+id/tv_url"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="地址：无"
+                        android:textSize="14sp"
+                        android:textColor="#333333"
+                        android:lines="1"
+                        android:ellipsize="end" />
+
+                    <Button
+                        android:id="@+id/btn_copy"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:text="复制"
+                        android:enabled="false"
+                        android:backgroundTint="#2196F3"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        app:cornerRadius="16dp" />
+                </LinearLayout>
+
+                <!-- 保存路径 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp">
+
+                    <TextView
+                        android:id="@+id/tv_save_path"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="保存路径："
+                        android:textSize="14sp"
+                        android:textColor="#555555"
+                        android:singleLine="true"
+                        android:ellipsize="end" />
+
+                    <Button
+                        android:id="@+id/btn_set_path"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:text="更改"
+                        android:backgroundTint="#FF9800"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        app:cornerRadius="16dp" />
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- ========== 2. 二维码 ========== -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="12dp"
+                android:background="#FFFFFF"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:id="@+id/iv_qr"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:background="#FFFFFF"
+                    android:padding="4dp"
+                    android:scaleType="centerInside" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:paddingStart="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="扫码访问"
+                        android:textSize="14sp"
+                        android:textColor="#333333"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_qr_hint"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="地址显示在上方"
+                        android:textSize="12sp"
+                        android:textColor="#999999"
+                        android:layout_marginTop="4dp" />
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- ========== 3. 发送文件按钮 ========== -->
+        <Button
+            android:id="@+id/btn_send"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:text="📤 发送文件"
+            android:backgroundTint="#FF9800"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:layout_marginBottom="12dp"
+            app:cornerRadius="22dp" />
+
+        <!-- ========== 4. 在线用户 + 待接收文件 ========== -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:background="#FFFFFF">
+
+                <!-- 在线用户 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="6dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="👤 在线用户"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="#1A237E" />
+
+                    <TextView
+                        android:id="@+id/tv_online_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=" (0)"
+                        android:textSize="14sp"
+                        android:textColor="#666666"
+                        android:layout_marginStart="6dp" />
+                </LinearLayout>
+
+                <ListView
+                    android:id="@+id/lv_users"
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:background="#FAFAFA"
+                    android:padding="4dp"
+                    android:divider="#E0E0E0"
+                    android:dividerHeight="1dp"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- 分割线 -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#E0E0E0"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- 待接收文件 -->
+                <!-- 待接收文件区域（独立控制显示隐藏） -->
+                <LinearLayout
+                    android:id="@+id/pending_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:orientation="vertical">
+
+                    <!-- 标题 + 按钮行 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="6dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="📥 待接收文件"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#1A237E" />
+
+                        <!-- 全部拒收 -->
+                        <Button
+                            android:id="@+id/btn_reject_all"
+                            android:layout_width="wrap_content"
+                            android:layout_height="32dp"
+                            android:text="全部拒收"
+                            android:backgroundTint="#F44336"
+                            android:textColor="#FFFFFF"
+                            android:textSize="12sp"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="14dp"
+                            android:layout_marginEnd="8dp"
+                            app:cornerRadius="16dp" />
+
+                        <!-- 全部接受 -->
+                        <Button
+                            android:id="@+id/btn_accept_all"
+                            android:layout_width="wrap_content"
+                            android:layout_height="32dp"
+                            android:text="全部接受"
+                            android:backgroundTint="#4CAF50"
+                            android:textColor="#FFFFFF"
+                            android:textSize="12sp"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="14dp"
+                            app:cornerRadius="16dp" />
+                    </LinearLayout>
+
+                    <!-- 待接收文件列表 -->
+                    <ListView
+                        android:id="@+id/lv_pending"
+                        android:layout_width="match_parent"
+                        android:layout_height="140dp"
+                        android:background="#FAFAFA"
+                        android:padding="4dp"
+                        android:divider="#E0E0E0"
+                        android:dividerHeight="1dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="点击项目选择接收或拒绝"
+                        android:textSize="12sp"
+                        android:textColor="#999999"
+                        android:layout_marginTop="6dp"
+                        android:layout_gravity="center" />
+                </LinearLayout>
+
+                <!-- 传输历史 + 打开目录 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center">
+
+                    <Button
+                        android:id="@+id/btn_open_folder"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:text="📂 打开目录"
+                        android:backgroundTint="#FF9800"
+                        android:textColor="#FFFFFF"
+                        android:textSize="15sp"
+                        android:layout_marginEnd="6dp"
+                        app:cornerRadius="22dp" />
+
+                    <Button
+                        android:id="@+id/btn_history"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:text="📋 传输历史"
+                        android:backgroundTint="#2196F3"
+                        android:textColor="#FFFFFF"
+                        android:textSize="15sp"
+                        android:layout_marginStart="6dp"
+                        app:cornerRadius="22dp" />
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- ========== 5. 已发送待接收 ========== -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/outgoingCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            android:layout_marginBottom="12dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:background="#FFFFFF">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📤 已发送待接收"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#1A237E"
+                    android:layout_marginBottom="8dp" />
+
+                <ListView
+                    android:id="@+id/lv_outgoing"
+                    android:layout_width="match_parent"
+                    android:layout_height="140dp"
+                    android:background="#FAFAFA"
+                    android:padding="4dp"
+                    android:divider="#E0E0E0"
+                    android:dividerHeight="1dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="点击取消按钮可取消发送"
+                    android:textSize="12sp"
+                    android:textColor="#999999"
+                    android:layout_marginTop="6dp"
+                    android:layout_gravity="center" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- ========== 6. 传输进度 ========== -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/progress_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:background="#FFFFFF">
+
+                <TextView
+                    android:id="@+id/tv_progress_file"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="正在接收："
+                    android:textSize="14sp"
+                    android:textColor="#333333"
+                    android:singleLine="true"
+                    android:ellipsize="end" />
+
+                <ProgressBar
+                    android:id="@+id/pb_upload"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp"
+                    android:max="100"
+                    android:layout_marginTop="6dp"
+                    android:progressTint="#4CAF50" />
+
+                <TextView
+                    android:id="@+id/tv_progress_percent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0%"
+                    android:textSize="12sp"
+                    android:textColor="#666666"
+                    android:layout_gravity="end" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+</ScrollView>

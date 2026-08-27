@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>阿俊快传 · 网页端</title>
+    <style>
+        /* ... 样式与之前相同，此处省略以节省篇幅，请使用之前的样式 ... */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #1a1a2e; padding: 12px; max-width: 100%; overflow-x: hidden; margin: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+        .header h1 { font-size: 22px; color: #0d47a1; }
+        .user-badge { background: #0d47a1; color: white; padding: 4px 14px; border-radius: 20px; font-size: 13px; white-space: nowrap; }
+        .card { background: white; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 16px; margin-bottom: 16px; width: 100%; max-width: 100%; overflow-x: hidden; }
+        .card h2 { font-size: 17px; margin-bottom: 10px; color: #1a237e; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .btn { background: #0d47a1; color: white; border: none; padding: 8px 20px; border-radius: 30px; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        .btn:hover { background: #1565c0; }
+        .btn:active { transform: scale(0.97); }
+        .btn-outline { background: transparent; border: 1.5px solid #0d47a1; color: #0d47a1; }
+        .btn-outline:hover { background: #e3f2fd; }
+        .btn-danger { background: #f44336; color: white; border: none; padding: 4px 12px; border-radius: 16px; cursor: pointer; }
+        .btn-success { background: #4CAF50; color: white; border: none; padding: 4px 12px; border-radius: 16px; cursor: pointer; }
+        .file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-top: 10px; width: 100%; }
+        .file-item { background: #fafafa; border-radius: 10px; padding: 10px; text-align: center; border: 1px solid #eee; overflow: hidden; }
+        .file-item img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 6px; background: #e0e0e0; cursor: pointer; }
+        .file-item .file-name { font-size: 12px; font-weight: 500; margin: 4px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .file-item .file-size { font-size: 11px; color: #777; }
+        .file-item .download-link { display: inline-block; margin-top: 4px; color: #0d47a1; text-decoration: none; font-weight: 500; font-size: 12px; cursor: pointer; }
+        .file-item .download-link:hover { text-decoration: underline; }
+        .status-msg { margin-top: 6px; font-size: 14px; color: #2e7d32; }
+        .empty-msg { color: #999; font-size: 14px; padding: 20px 0; text-align: center; }
+        .progress-bar { width: 100%; height: 4px; background: #e0e0e0; border-radius: 2px; margin: 6px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: #0d47a1; width: 0%; transition: width 0.3s; }
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #323232; color: white; padding: 10px 24px; border-radius: 30px; font-size: 13px; opacity: 0; transition: opacity 0.4s; pointer-events: none; z-index: 1000; }
+        .toast.show { opacity: 1; }
+        .pending-badge { background: #ff9800; color: white; border-radius: 20px; padding: 4px 12px; font-size: 12px; margin-left: 8px; }
+        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 9999; text-align: center; padding: 20px; align-items: center; justify-content: center; overflow: auto; }
+        #modal img { max-width: 95%; max-height: 95%; object-fit: contain; border-radius: 8px; }
+        #modal-close { position: absolute; top: 16px; right: 24px; color: white; font-size: 40px; font-weight: 300; cursor: pointer; z-index: 10000; }
+        .pending-item, .outgoing-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; gap: 10px; flex-wrap: wrap; }
+        .pending-item .thumb, .outgoing-item .thumb { width: 50px; height: 50px; border-radius: 6px; object-fit: cover; background: #e0e0e0; flex-shrink: 0; }
+        .pending-item .info, .outgoing-item .info { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pending-item .actions { display: flex; gap: 6px; flex-shrink: 0; }
+        .user-checkbox-item { display: flex; align-items: center; padding: 4px 0; }
+        .user-checkbox-item input[type="checkbox"] { margin-right: 8px; }
+        @media (max-width: 480px) {
+            body { padding: 8px; }
+            .header h1 { font-size: 18px; }
+            .file-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+            .file-item { padding: 6px; }
+            .btn { font-size: 12px; padding: 6px 14px; }
+            .pending-item .thumb, .outgoing-item .thumb { width: 40px; height: 40px; }
+        }
+        @media (min-width: 768px) {
+            .file-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>📁 阿俊快传</h1>
+        <span class="user-badge" id="userNameDisplay">正在连接...</span>
+    </div>
+
+    <!-- 发送卡片 -->
+    <div class="card">
+        <h2>📤 发送文件</h2>
+        <div style="margin-bottom:10px;">
+            <label>选择文件（可多选）</label>
+            <input type="file" id="fileInput" multiple onchange="updateFileList()" style="display:block; width:100%; padding:6px; border:1px dashed #90a4ae; border-radius:8px; font-size:13px; margin-top:4px;">
+        </div>
+        <div id="fileListPreview" style="margin-top:6px; max-height:120px; overflow-y:auto; border:1px solid #eee; border-radius:8px; padding:4px; display:none;"></div>
+        <div style="margin-top:8px;">
+            <label>选择目标用户（可多选）</label>
+            <div id="userCheckboxList" style="max-height:120px; overflow-y:auto; border:1px solid #eee; border-radius:8px; padding:8px; margin-top:4px;">
+                <div class="empty-msg">加载用户列表...</div>
+            </div>
+        </div>
+        <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn" onclick="sendFiles()">发送给选中用户</button>
+            <button class="btn btn-outline" onclick="clearAllSelection()">清空选择</button>
+        </div>
+        <div id="uploadStatus" class="status-msg"></div>
+        <div class="progress-bar" id="progressContainer" style="display:none;">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
+
+    <!-- 已发送待接收清单 -->
+    <div class="card" id="outgoingCard" style="display:none;">
+        <h2>📤 已发送待接收 <span id="outgoingCount" class="pending-badge">0</span></h2>
+        <div id="outgoingList"></div>
+    </div>
+
+    <!-- 待下载文件 -->
+    <div class="card" id="pendingCard" style="display:none;">
+        <h2>📥 待下载文件 <span id="pendingCount" class="pending-badge">0</span></h2>
+        <div id="pendingList"></div>
+    </div>
+
+    <!-- 已接收文件列表 -->
+    <div class="card">
+        <h2>📂 已接收文件 <span style="font-size:14px;font-weight:normal;color:#777;">（自动刷新）</span></h2>
+        <div id="fileListContainer" class="file-grid">
+            <div class="empty-msg">加载中...</div>
+        </div>
+    </div>
+
+    <!-- 模态框 -->
+    <div id="modal" onclick="closeModal(event)">
+        <span id="modal-close" onclick="closeModal(event)">&times;</span>
+        <img id="modal-img" src="">
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // ==================== 全局变量 ====================
+        let currentUser = '';
+        const refreshInterval = 5000;
+        const notifyInterval = 3000;
+        let pendingDownloads = [];
+        let selectedFiles = [];
+        let userList = [];
+        let selectedUsers = []; // 存储勾选的用户名
+        let isSending = false;
+
+        // ==================== 初始化 ====================
+        window.onload = function() {
+        // 心跳：每10秒发送一次，保持在线
+setInterval(() => {
+    if (currentUser) {
+        fetch('/heartbeat?user=' + encodeURIComponent(currentUser))
+            .catch(err => console.warn('心跳失败', err));
+    }
+}, 10000);
+            fetch('/connect')
+                .then(res => res.json())
+                .then(data => {
+                    currentUser = data.userName;
+                    document.getElementById('userNameDisplay').textContent = '👤 ' + currentUser;
+                    startPolling();
+                    fetchFileList();
+                    fetchUserList();
+                    fetchOutgoingList();
+                    setInterval(fetchFileList, refreshInterval);
+                    setInterval(fetchUserList, 3000);
+                    setInterval(fetchOutgoingList, 5000);
+                })
+                .catch(err => {
+                    console.error('连接失败', err);
+                    document.getElementById('userNameDisplay').textContent = '⚠️ 连接失败';
+                });
+        };
+
+        // ==================== 获取在线用户列表 ====================
+        function fetchUserList() {
+            fetch('/users')
+                .then(res => res.json())
+                .then(users => {
+                    userList = users.filter(u => u !== currentUser);
+                    renderUserCheckboxes();
+                })
+                .catch(err => console.warn('获取用户列表失败', err));
+        }
+
+        function renderUserCheckboxes() {
+            const container = document.getElementById('userCheckboxList');
+            if (!userList || userList.length === 0) {
+                container.innerHTML = '<div class="empty-msg">暂无其他在线用户</div>';
+                return;
+            }
+            let html = '';
+            userList.forEach(user => {
+                const checked = selectedUsers.includes(user) ? 'checked' : '';
+                html += `<div class="user-checkbox-item">
+                            <input type="checkbox" id="user_${user}" value="${user}" ${checked} onchange="updateSelectedUsers()">
+                            <label for="user_${user}">${user}</label>
+                        </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function updateSelectedUsers() {
+            const checkboxes = document.querySelectorAll('#userCheckboxList input[type="checkbox"]');
+            selectedUsers = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+        }
+
+        // ==================== 文件选择预览 ====================
+        function updateFileList() {
+            const input = document.getElementById('fileInput');
+            selectedFiles = Array.from(input.files);
+            renderFilePreview();
+        }
+
+        function renderFilePreview() {
+            const container = document.getElementById('fileListPreview');
+            if (selectedFiles.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            container.style.display = 'block';
+            let html = '';
+            selectedFiles.forEach((file, index) => {
+                html += `<div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #eee; align-items:center;">
+                            <span>${file.name} (${(file.size/1024).toFixed(1)} KB)</span>
+                            <button class="btn-danger" onclick="removeSelectedFile(${index})">取消</button>
+                        </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function removeSelectedFile(index) {
+            selectedFiles.splice(index, 1);
+            const input = document.getElementById('fileInput');
+            const dt = new DataTransfer();
+            selectedFiles.forEach(f => dt.items.add(f));
+            input.files = dt.files;
+            renderFilePreview();
+        }
+
+        function clearAllSelection() {
+            selectedFiles = [];
+            document.getElementById('fileInput').value = '';
+            renderFilePreview();
+            selectedUsers = [];
+            renderUserCheckboxes(); // 刷新复选框清除勾选
+            showToast('已清空选择');
+        }
+
+        // ==================== 发送文件（多文件 -> 多用户） ====================
+        function sendFiles() {
+            if (isSending) return;
+            if (selectedFiles.length === 0) {
+                showToast('请先选择文件');
+                return;
+            }
+            const targets = selectedUsers; // 使用全局变量
+            if (targets.length === 0) {
+                showToast('请至少选择一个目标用户');
+                return;
+            }
+
+            isSending = true;
+            const totalFiles = selectedFiles.length;
+            const totalTargets = targets.length;
+            let sentCount = 0;
+            const progressContainer = document.getElementById('progressContainer');
+            const progressFill = document.getElementById('progressFill');
+            progressContainer.style.display = 'block';
+
+            let currentTargetIndex = 0;
+            let currentFileIndex = 0;
+
+            function sendNext() {
+                // 如果所有用户都处理完
+                if (currentTargetIndex >= totalTargets) {
+                    progressContainer.style.display = 'none';
+                    document.getElementById('uploadStatus').textContent = '✅ 全部发送完成！';
+                    selectedFiles = [];
+                    document.getElementById('fileInput').value = '';
+                    renderFilePreview();
+                    fetchOutgoingList();
+                    isSending = false;
+                    showToast('✅ 全部发送完成');
+                    return;
+                }
+
+                // 如果当前用户的所有文件已发送完，切换到下一个用户
+                if (currentFileIndex >= totalFiles) {
+                    currentFileIndex = 0;
+                    currentTargetIndex++;
+                    // 递归调用下一用户
+                    sendNext();
+                    return;
+                }
+
+                const targetUser = targets[currentTargetIndex];
+                const file = selectedFiles[currentFileIndex];
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('target', encodeURIComponent(targetUser));
+                formData.append('sender', encodeURIComponent(currentUser));
+                formData.append('originalName', encodeURIComponent(file.name));
+
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/push', true);
+
+                xhr.upload.onprogress = function(e) {
+                    if (e.lengthComputable) {
+                        const percent = Math.round((e.loaded / e.total) * 100);
+                        // 整体进度 = (已发送总数 + 当前进度) / (总文件数 * 总目标数)
+                        const totalSteps = totalFiles * totalTargets;
+                        const completedSteps = currentTargetIndex * totalFiles + currentFileIndex;
+                        const overall = ((completedSteps + (percent / 100)) / totalSteps) * 100;
+                        progressFill.style.width = overall + '%';
+                    }
+                };
+
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        document.getElementById('uploadStatus').textContent =
+                            `📤 发送 ${file.name} 给 ${targetUser} 成功 (${currentFileIndex+1}/${totalFiles})`;
+                        currentFileIndex++;
+                        sendNext();
+                    } else {
+                        showToast('❌ 发送失败：' + file.name + ' 给 ' + targetUser);
+                        currentFileIndex++;
+                        sendNext();
+                    }
+                };
+
+                xhr.onerror = function() {
+                    showToast('❌ 网络错误，发送中断');
+                    progressContainer.style.display = 'none';
+                    isSending = false;
+                };
+
+                xhr.send(formData);
+            }
+
+            sendNext();
+        }
+
+        // ==================== 已发送待接收清单 ====================
+        function fetchOutgoingList() {
+            if (!currentUser) return;
+            fetch('/outgoing_pushes?user=' + encodeURIComponent(currentUser))
+                .then(res => res.json())
+                .then(list => {
+                    const card = document.getElementById('outgoingCard');
+                    const countSpan = document.getElementById('outgoingCount');
+                    const listDiv = document.getElementById('outgoingList');
+                    if (!list || list.length === 0) {
+                        card.style.display = 'none';
+                        return;
+                    }
+                    card.style.display = 'block';
+                    countSpan.textContent = list.length;
+                    let html = '';
+                    list.forEach(item => {
+                        const sizeKB = (item.fileSize / 1024).toFixed(1);
+                        const isImage = /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(item.fileName);
+                        const thumbUrl = isImage ? `/thumbnail?file=${encodeURIComponent(item.fileName)}` : '';
+                        html += `
+                            <div class="outgoing-item">
+                                <img class="thumb" src="${thumbUrl}" 
+                                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect width=%2250%22 height=%2250%22 fill=%22%23e0e0e0%22/%3E%3Ctext x=%2250%22 y=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23999%22 font-size=%2220%22 font-family=%22sans-serif%22%3E📄%3C/text%3E%3C/svg%3E'" 
+                                     alt="${item.fileName}" loading="lazy">
+                                <span class="info">${item.fileName} (${sizeKB} KB) → 发送给 ${item.targetUser || '未知'}</span>
+                                <span style="font-size:12px; color:#999;">等待接收</span>
+                            </div>
+                        `;
+                    });
+                    listDiv.innerHTML = html;
+                })
+                .catch(err => console.warn('获取发送清单失败', err));
+        }
+
+        // ==================== 轮询待下载文件 ====================
+        function startPolling() {
+            setInterval(() => {
+                if (!currentUser) return;
+                fetch('/notify?user=' + encodeURIComponent(currentUser))
+                    .then(res => res.json())
+                    .then(list => {
+                        if (list && list.length > 0) {
+                            pendingDownloads = list;
+                            updatePendingUI();
+                            showToast('📥 有 ' + list.length + ' 个待下载文件');
+                        } else {
+                            if (pendingDownloads.length > 0) {
+                                pendingDownloads = [];
+                                updatePendingUI();
+                            }
+                        }
+                    })
+                    .catch(err => console.warn('轮询通知失败', err));
+            }, notifyInterval);
+        }
+
+        // ==================== 待下载 UI（接收/拒绝按钮） ====================
+        function updatePendingUI() {
+            const card = document.getElementById('pendingCard');
+            const countSpan = document.getElementById('pendingCount');
+            const listDiv = document.getElementById('pendingList');
+            if (!pendingDownloads || pendingDownloads.length === 0) {
+                card.style.display = 'none';
+                return;
+            }
+            card.style.display = 'block';
+            countSpan.textContent = pendingDownloads.length;
+            let html = '';
+            pendingDownloads.forEach(item => {
+                const sizeKB = (item.fileSize / 1024).toFixed(1);
+                const isImage = /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(item.fileName);
+                const thumbUrl = isImage ? `/thumbnail?file=${encodeURIComponent(item.fileName)}` : '';
+                html += `
+                    <div class="pending-item">
+                        <img class="thumb" src="${thumbUrl}" 
+                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect width=%2250%22 height=%2250%22 fill=%22%23e0e0e0%22/%3E%3Ctext x=%2250%22 y=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23999%22 font-size=%2220%22 font-family=%22sans-serif%22%3E📄%3C/text%3E%3C/svg%3E'" 
+                             alt="${item.fileName}" loading="lazy">
+                        <span class="info">${item.fileName} (${sizeKB} KB)</span>
+                        <div class="actions">
+                            <button class="btn-success" onclick="confirmDownload('${item.fileName}', '${item.downloadUrl}')">接收</button>
+                            <button class="btn-danger" onclick="rejectDownload('${item.fileName}')">拒绝</button>
+                        </div>
+                    </div>
+                `;
+            });
+            listDiv.innerHTML = html;
+        }
+
+        // ==================== 接收文件 ====================
+        function confirmDownload(fileName, downloadUrl) {
+            fetch('/confirm_receive?user=' + encodeURIComponent(currentUser) + '&fileName=' + encodeURIComponent(fileName), {
+                method: 'POST'
+            })
+            .then(res => {
+                if (res.ok) {
+                    const link = document.createElement('a');
+                    link.href = downloadUrl;
+                    link.download = fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    pendingDownloads = pendingDownloads.filter(item => item.fileName !== fileName);
+                    updatePendingUI();
+                    fetchFileList();
+                    fetchOutgoingList();
+                    showToast('✅ 已接收：' + fileName);
+                } else {
+                    showToast('❌ 接收失败');
+                }
+            })
+            .catch(() => showToast('❌ 网络错误'));
+        }
+
+        // ==================== 拒绝文件 ====================
+        function rejectDownload(fileName) {
+            fetch('/reject_receive?user=' + encodeURIComponent(currentUser) + '&fileName=' + encodeURIComponent(fileName), {
+                method: 'POST'
+            })
+            .then(res => {
+                if (res.ok) {
+                    pendingDownloads = pendingDownloads.filter(item => item.fileName !== fileName);
+                    updatePendingUI();
+                    fetchOutgoingList();
+                    showToast('已拒绝：' + fileName);
+                } else {
+                    showToast('❌ 拒绝失败');
+                }
+            })
+            .catch(() => showToast('❌ 网络错误'));
+        }
+
+        // ==================== 已接收文件列表 ====================
+        function fetchFileList() {
+            if (!currentUser) {
+                document.getElementById('fileListContainer').innerHTML = '<div class="empty-msg">未连接</div>';
+                return;
+            }
+            fetch('/list?user=' + encodeURIComponent(currentUser))
+                .then(res => res.json())
+                .then(files => {
+                    const container = document.getElementById('fileListContainer');
+                    if (!files || files.length === 0) {
+                        container.innerHTML = '<div class="empty-msg">暂无文件</div>';
+                        return;
+                    }
+                    let html = '';
+                    files.forEach(file => {
+                        const name = file.name;
+                        const sizeKB = (file.size / 1024).toFixed(1);
+                        const isImage = /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(name);
+                        const thumbUrl = isImage ? `/thumbnail?file=${encodeURIComponent(name)}` : '';
+                        html += `
+                            <div class="file-item">
+                                <img src="${thumbUrl}" 
+                                     onclick="showFullImage('${encodeURIComponent(name)}')" 
+                                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%23e0e0e0%22/%3E%3Ctext x=%2250%22 y=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23999%22 font-size=%2214%22 font-family=%22sans-serif%22%3E📄%3C/text%3E%3C/svg%3E'" 
+                                     alt="${name}" loading="lazy">
+                                <div class="file-name" title="${name}">${name}</div>
+                                <div class="file-size">${sizeKB} KB</div>
+                                <a class="download-link" onclick="downloadReceivedFile('${encodeURIComponent(name)}')">⬇️ 下载</a>
+                            </div>
+                        `;
+                    });
+                    container.innerHTML = html;
+                })
+                .catch(err => {
+                    console.error('获取列表失败', err);
+                    document.getElementById('fileListContainer').innerHTML = '<div class="empty-msg">加载失败</div>';
+                });
+        }
+
+        function downloadReceivedFile(fileName) {
+            const url = '/download/' + fileName;
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = decodeURIComponent(fileName);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function showFullImage(fileName) {
+            document.getElementById('modal-img').src = '/thumbnail?file=' + fileName + '&full=true';
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function closeModal(e) {
+            if (e.target === document.getElementById('modal') || e.target.id === 'modal-close') {
+                document.getElementById('modal').style.display = 'none';
+            }
+        }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') document.getElementById('modal').style.display = 'none'; });
+
+        // ==================== Toast ====================
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- 覆盖整个外部存储，适配所有可能的保存路径 -->
+    <external-path
+        name="root"
+        path="" />
+</paths>
